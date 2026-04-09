@@ -2,19 +2,19 @@ import { useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text, Button } from '@/components/ui';
 import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
 import { useOnboarding } from '@/components/onboarding/OnboardingContext';
-import { colors, radii } from '@/constants/theme';
+import { colors, gradients, radii } from '@/constants/theme';
 
 const goals = [
-  { id: 'clear-skin', emoji: '✨', label: 'Get clear, glowing skin', icon: 'sparkles' as const },
-  { id: 'even-tone', emoji: '🎨', label: 'Even out my skin tone', icon: 'color-palette' as const },
-  { id: 'anti-aging', emoji: '🌟', label: 'Prevent aging & wrinkles', icon: 'sunny' as const },
-  { id: 'full-glow', emoji: '💎', label: 'Full glow-up transformation', icon: 'diamond' as const },
-  { id: 'track', emoji: '📈', label: 'Track my skincare progress', icon: 'trending-up' as const },
-  { id: 'curious', emoji: '🔍', label: 'Just curious about my score', icon: 'search' as const },
+  { id: 'clear-skin', emoji: '✨', label: 'Get clear, glowing skin' },
+  { id: 'even-tone', emoji: '🎨', label: 'Even out my skin tone' },
+  { id: 'anti-aging', emoji: '🌟', label: 'Prevent aging & wrinkles' },
+  { id: 'full-glow', emoji: '💎', label: 'Full glow-up transformation' },
+  { id: 'track', emoji: '📈', label: 'Track my skincare progress' },
+  { id: 'curious', emoji: '🔍', label: 'Just curious about my score' },
 ];
 
 export default function GoalScreen() {
@@ -42,13 +42,13 @@ export default function GoalScreen() {
     >
       <View style={styles.header}>
         <Animated.View entering={FadeInDown.duration(600)}>
-          <Text variant="sectionTitle" style={styles.title}>
+          <Text variant="heroTitle" style={styles.title}>
             what&apos;s your{'\n'}glow-up goal?
           </Text>
         </Animated.View>
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <Text variant="sectionSub">
-            pick the one that matters most to you right now
+        <Animated.View entering={FadeInDown.delay(150).duration(600)}>
+          <Text variant="sectionSub" style={styles.sub}>
+            pick the one that matters most right now
           </Text>
         </Animated.View>
       </View>
@@ -59,35 +59,32 @@ export default function GoalScreen() {
           return (
             <Animated.View
               key={goal.id}
-              entering={FadeInDown.delay(300 + index * 80).duration(500)}
+              entering={FadeInDown.delay(250 + index * 70).duration(500)}
             >
               <Pressable
                 onPress={() => handleSelect(goal.id)}
-                style={[
-                  styles.option,
-                  isSelected && styles.optionSelected,
-                ]}
+                style={[styles.option, isSelected && styles.optionSelected]}
               >
-                <View style={[styles.iconBox, isSelected && styles.iconBoxSelected]}>
-                  <Ionicons
-                    name={goal.icon}
-                    size={20}
-                    color={isSelected ? colors.white : colors.purple}
+                {isSelected && (
+                  <LinearGradient
+                    colors={[...gradients.primary.colors]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFill}
+                    pointerEvents="none"
                   />
+                )}
+                <View style={[styles.emojiBox, isSelected && styles.emojiBoxSelected]}>
+                  <Text style={styles.emoji}>{goal.emoji}</Text>
                 </View>
                 <Text
                   variant="cardTitle"
-                  style={[
-                    styles.optionLabel,
-                    isSelected && styles.optionLabelSelected,
-                  ]}
+                  style={[styles.label, isSelected && { color: colors.white }]}
                 >
                   {goal.label}
                 </Text>
-                <View style={[styles.radio, isSelected && styles.radioSelected]}>
-                  {isSelected && (
-                    <Ionicons name="checkmark" size={14} color={colors.white} />
-                  )}
+                <View style={[styles.check, isSelected && styles.checkSelected]}>
+                  {isSelected && <View style={styles.checkDot} />}
                 </View>
               </Pressable>
             </Animated.View>
@@ -100,12 +97,15 @@ export default function GoalScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: 32,
-    marginBottom: 28,
+    paddingTop: 36,
+    marginBottom: 32,
   },
   title: {
-    marginBottom: 8,
-    lineHeight: 40,
+    marginBottom: 10,
+    lineHeight: 48,
+  },
+  sub: {
+    lineHeight: 22,
   },
   options: {
     gap: 10,
@@ -113,46 +113,55 @@ const styles = StyleSheet.create({
   option: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
     borderRadius: radii.lg,
     padding: 16,
-    borderWidth: 1.5,
+    paddingLeft: 14,
+    borderWidth: 1,
     borderColor: colors.border,
+    backgroundColor: colors.surface,
     gap: 14,
+    overflow: 'hidden',
   },
   optionSelected: {
-    borderColor: colors.hotpink,
-    backgroundColor: 'rgba(236,72,153,0.06)',
+    borderColor: 'rgba(236,72,153,0.3)',
+    backgroundColor: 'transparent',
   },
-  iconBox: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
-    backgroundColor: 'rgba(168,85,247,0.1)',
+  emojiBox: {
+    width: 42,
+    height: 42,
+    borderRadius: 13,
+    backgroundColor: 'rgba(168,85,247,0.08)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  iconBoxSelected: {
-    backgroundColor: colors.hotpink,
+  emojiBoxSelected: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
-  optionLabel: {
+  emoji: {
+    fontSize: 20,
+  },
+  label: {
     flex: 1,
     fontSize: 15,
+    color: colors.text,
   },
-  optionLabelSelected: {
-    color: colors.white,
-  },
-  radio: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+  check: {
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: colors.textDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioSelected: {
-    borderColor: colors.hotpink,
-    backgroundColor: colors.hotpink,
+  checkSelected: {
+    borderColor: colors.white,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  checkDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.white,
   },
 });

@@ -14,27 +14,12 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, Button } from '@/components/ui';
 import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
-import { colors, gradients, radii } from '@/constants/theme';
+import { colors, gradients, radii, shadows } from '@/constants/theme';
 
-const notifBenefits = [
-  {
-    icon: 'flame' as const,
-    title: 'Streak reminders',
-    desc: 'Stay consistent and never break your glow streak',
-    time: '9:00 AM',
-  },
-  {
-    icon: 'bulb' as const,
-    title: 'Personalized tips',
-    desc: 'Get daily tips tailored to your skin concerns',
-    time: '12:00 PM',
-  },
-  {
-    icon: 'trending-up' as const,
-    title: 'Progress updates',
-    desc: 'See how your glow score changes week over week',
-    time: 'Weekly',
-  },
+const notifItems = [
+  { icon: 'flame' as const, title: 'Streak reminders', time: '9:00 AM', color: colors.hotpink },
+  { icon: 'bulb' as const, title: 'Daily glow tips', time: '12:00 PM', color: colors.purple },
+  { icon: 'trending-up' as const, title: 'Weekly progress', time: 'Mondays', color: colors.good },
 ];
 
 export default function NotifPrimeScreen() {
@@ -44,15 +29,14 @@ export default function NotifPrimeScreen() {
   useEffect(() => {
     bellShake.value = withRepeat(
       withSequence(
-        withTiming(12, { duration: 100 }),
-        withTiming(-12, { duration: 100 }),
-        withTiming(8, { duration: 80 }),
-        withTiming(-8, { duration: 80 }),
-        withTiming(0, { duration: 100 }),
-        withTiming(0, { duration: 2500 })
+        withTiming(10, { duration: 80 }),
+        withTiming(-10, { duration: 80 }),
+        withTiming(6, { duration: 60 }),
+        withTiming(-6, { duration: 60 }),
+        withTiming(0, { duration: 80 }),
+        withTiming(0, { duration: 3000 })
       ),
-      -1,
-      false
+      -1, false
     );
   }, [bellShake]);
 
@@ -60,83 +44,59 @@ export default function NotifPrimeScreen() {
     transform: [{ rotate: `${bellShake.value}deg` }],
   }));
 
-  const handleEnable = () => {
-    // TODO: Request notification permission
-    // Notifications.requestPermissionsAsync()
-    router.push('/onboarding/processing');
-  };
-
   return (
     <OnboardingScreen
       step={10}
       footer={
-        <View style={styles.footerContent}>
-          <Button title="Enable Notifications" size="lg" onPress={handleEnable} />
-          <Button
-            title="Not now"
-            variant="ghost"
-            size="sm"
-            onPress={() => router.push('/onboarding/processing')}
-          />
+        <View style={{ gap: 10 }}>
+          <Button title="Enable Notifications" size="lg" onPress={() => router.push('/onboarding/processing')} />
+          <Button title="Not now" variant="ghost" size="sm" onPress={() => router.push('/onboarding/processing')} />
         </View>
       }
     >
       <View style={styles.content}>
-        {/* Bell illustration */}
+        {/* Bell */}
         <Animated.View entering={FadeIn.duration(800)}>
-          <View style={styles.bellContainer}>
+          <View style={styles.bellWrap}>
             <LinearGradient
               colors={[...gradients.primary.colors]}
               start={gradients.primary.start}
               end={gradients.primary.end}
-              style={styles.bellBg}
+              style={[styles.bellBg, shadows.glowPurple]}
             >
               <Animated.View style={bellStyle}>
-                <Ionicons name="notifications" size={44} color={colors.white} />
+                <Ionicons name="notifications" size={48} color={colors.white} />
               </Animated.View>
             </LinearGradient>
-            {/* Notification dot */}
-            <View style={styles.notifDot}>
+            <View style={styles.badge}>
               <Text variant="tagText" style={{ fontSize: 10 }}>3</Text>
             </View>
           </View>
         </Animated.View>
 
-        {/* Text */}
         <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-          <Text variant="sectionTitle" style={styles.title}>
+          <Text variant="heroTitle" style={styles.title}>
             never miss a{'\n'}glow check
           </Text>
         </Animated.View>
-        <Animated.View entering={FadeInDown.delay(500).duration(600)}>
-          <Text variant="sectionSub" style={styles.subtitle}>
-            gentle reminders to keep your skincare streak alive
+        <Animated.View entering={FadeInDown.delay(450).duration(600)}>
+          <Text variant="sectionSub" style={styles.sub}>
+            gentle reminders to keep your streak alive
           </Text>
         </Animated.View>
 
         {/* Mock notifications */}
-        <View style={styles.notifList}>
-          {notifBenefits.map((item, index) => (
-            <Animated.View
-              key={item.icon}
-              entering={FadeInDown.delay(700 + index * 120).duration(500)}
-            >
+        <View style={styles.notifs}>
+          {notifItems.map((item, i) => (
+            <Animated.View key={item.icon} entering={FadeInDown.delay(600 + i * 100).duration(500)}>
               <View style={styles.notifCard}>
-                <View style={styles.notifIcon}>
-                  <Ionicons name={item.icon} size={18} color={colors.hotpink} />
+                <View style={[styles.notifDot, { backgroundColor: item.color }]} />
+                <View style={[styles.notifIcon, { backgroundColor: `${item.color}12` }]}>
+                  <Ionicons name={item.icon} size={18} color={item.color} />
                 </View>
-                <View style={styles.notifText}>
-                  <Text variant="cardTitle" style={{ fontSize: 13 }}>
-                    {item.title}
-                  </Text>
-                  <Text variant="caption" style={{ color: colors.textDim, fontSize: 10 }}>
-                    {item.desc}
-                  </Text>
-                </View>
-                <View style={styles.timeBadge}>
-                  <Text variant="caption" style={{ fontSize: 9, color: colors.textMuted }}>
-                    {item.time}
-                  </Text>
+                <Text variant="cardTitle" style={{ flex: 1, fontSize: 13 }}>{item.title}</Text>
+                <View style={styles.timePill}>
+                  <Text variant="caption" style={{ fontSize: 10, color: colors.textMuted }}>{item.time}</Text>
                 </View>
               </View>
             </Animated.View>
@@ -153,24 +113,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  bellContainer: {
-    marginBottom: 32,
+  bellWrap: {
+    marginBottom: 36,
     position: 'relative',
   },
   bellBg: {
-    width: 110,
-    height: 110,
-    borderRadius: 34,
+    width: 120,
+    height: 120,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  notifDot: {
+  badge: {
     position: 'absolute',
-    top: -4,
-    right: -4,
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    top: -6,
+    right: -6,
+    width: 26,
+    height: 26,
+    borderRadius: 13,
     backgroundColor: colors.alert,
     alignItems: 'center',
     justifyContent: 'center',
@@ -180,15 +140,15 @@ const styles = StyleSheet.create({
   title: {
     textAlign: 'center',
     marginBottom: 12,
-    lineHeight: 40,
+    lineHeight: 48,
   },
-  subtitle: {
+  sub: {
     textAlign: 'center',
     maxWidth: 300,
-    marginBottom: 28,
+    marginBottom: 36,
     lineHeight: 22,
   },
-  notifList: {
+  notifs: {
     gap: 10,
     width: '100%',
   },
@@ -196,31 +156,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
-    borderRadius: radii.md,
-    padding: 14,
+    borderRadius: radii.lg,
+    padding: 16,
     borderWidth: 1,
     borderColor: colors.border,
     gap: 12,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  notifDot: {
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    bottom: 0,
+    width: 3,
+    borderRadius: 2,
   },
   notifIcon: {
-    width: 36,
-    height: 36,
-    borderRadius: 10,
-    backgroundColor: 'rgba(236,72,153,0.1)',
+    width: 38,
+    height: 38,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  notifText: {
-    flex: 1,
-    gap: 2,
-  },
-  timeBadge: {
+  timePill: {
     backgroundColor: colors.surface2,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 100,
-  },
-  footerContent: {
-    gap: 8,
   },
 });

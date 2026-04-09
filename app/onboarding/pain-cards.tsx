@@ -19,29 +19,13 @@ import { useOnboarding } from '@/components/onboarding/OnboardingContext';
 import { colors, radii } from '@/constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
+const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.25;
 
 const painStatements = [
-  {
-    id: 'products',
-    text: 'I\u2019ve spent hundreds on skincare products that didn\u2019t work for me',
-    emoji: '💸',
-  },
-  {
-    id: 'routine',
-    text: 'I never know if my skincare routine is actually helping my skin',
-    emoji: '🤔',
-  },
-  {
-    id: 'progress',
-    text: 'I wish I had a simple way to track my skin progress over time',
-    emoji: '📊',
-  },
-  {
-    id: 'compare',
-    text: 'I compare myself to influencers but have no idea where I actually stand',
-    emoji: '📱',
-  },
+  { id: 'products', text: 'I\u2019ve spent so much on products that didn\u2019t work', emoji: '💸' },
+  { id: 'routine', text: 'I never know if my routine is actually helping', emoji: '🤔' },
+  { id: 'progress', text: 'I wish I could track my skin progress', emoji: '📊' },
+  { id: 'compare', text: 'I have no idea where I actually stand', emoji: '📱' },
 ];
 
 function SwipeCard({
@@ -54,6 +38,8 @@ function SwipeCard({
   const translateX = useSharedValue(0);
   const rotateZ = useSharedValue(0);
   const opacity = useSharedValue(1);
+  const leftOpacity = useSharedValue(0);
+  const rightOpacity = useSharedValue(0);
 
   const handleSwipe = (agreed: boolean) => {
     onSwipe(statement.id, agreed);
@@ -62,7 +48,9 @@ function SwipeCard({
   const panGesture = Gesture.Pan()
     .onUpdate((e) => {
       translateX.value = e.translationX;
-      rotateZ.value = e.translationX / 20;
+      rotateZ.value = e.translationX / 25;
+      leftOpacity.value = Math.max(0, -e.translationX / SWIPE_THRESHOLD);
+      rightOpacity.value = Math.max(0, e.translationX / SWIPE_THRESHOLD);
     })
     .onEnd((e) => {
       if (e.translationX > SWIPE_THRESHOLD) {
@@ -76,10 +64,12 @@ function SwipeCard({
       } else {
         translateX.value = withSpring(0);
         rotateZ.value = withSpring(0);
+        leftOpacity.value = withTiming(0);
+        rightOpacity.value = withTiming(0);
       }
     });
 
-  const animatedStyle = useAnimatedStyle(() => ({
+  const cardStyle = useAnimatedStyle(() => ({
     transform: [
       { translateX: translateX.value },
       { rotate: `${rotateZ.value}deg` },
@@ -87,29 +77,34 @@ function SwipeCard({
     opacity: opacity.value,
   }));
 
+  const leftBadgeStyle = useAnimatedStyle(() => ({
+    opacity: leftOpacity.value,
+  }));
+  const rightBadgeStyle = useAnimatedStyle(() => ({
+    opacity: rightOpacity.value,
+  }));
+
   return (
     <GestureDetector gesture={panGesture}>
-      <Animated.View style={[styles.card, animatedStyle]}>
+      <Animated.View style={[styles.card, cardStyle]}>
         <LinearGradient
-          colors={['rgba(168,85,247,0.08)', 'rgba(236,72,153,0.04)']}
+          colors={['rgba(168,85,247,0.1)', 'rgba(236,72,153,0.06)', 'rgba(168,85,247,0.04)']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.cardInner}
         >
+          {/* Swipe feedback badges */}
+          <Animated.View style={[styles.swipeBadge, styles.swipeBadgeLeft, leftBadgeStyle]}>
+            <Ionicons name="close" size={24} color={colors.alert} />
+          </Animated.View>
+          <Animated.View style={[styles.swipeBadge, styles.swipeBadgeRight, rightBadgeStyle]}>
+            <Ionicons name="checkmark" size={24} color={colors.good} />
+          </Animated.View>
+
           <Text style={styles.cardEmoji}>{statement.emoji}</Text>
           <Text variant="sectionTitle" style={styles.cardText}>
             &ldquo;{statement.text}&rdquo;
           </Text>
-          <View style={styles.swipeHints}>
-            <View style={styles.hintLeft}>
-              <Ionicons name="close" size={18} color={colors.alert} />
-              <Text variant="caption" style={{ color: colors.alert }}>nope</Text>
-            </View>
-            <View style={styles.hintRight}>
-              <Text variant="caption" style={{ color: colors.good }}>me</Text>
-              <Ionicons name="checkmark" size={18} color={colors.good} />
-            </View>
-          </View>
         </LinearGradient>
       </Animated.View>
     </GestureDetector>
@@ -125,7 +120,6 @@ export default function PainCardsScreen() {
   const handleSwipe = (id: string, agreed: boolean) => {
     const updated = { ...results, [id]: agreed };
     setResults(updated);
-
     setTimeout(() => {
       if (currentIndex < painStatements.length - 1) {
         setCurrentIndex((prev) => prev + 1);
@@ -136,26 +130,20 @@ export default function PainCardsScreen() {
     }, 350);
   };
 
-  const remaining = painStatements.length - currentIndex;
-
   return (
     <OnboardingScreen step={6}>
       <View style={styles.header}>
         <Animated.View entering={FadeInDown.duration(600)}>
-          <Text variant="sectionTitle" style={styles.title}>
-            do you relate?
-          </Text>
+          <Text variant="heroTitle" style={styles.title}>do you relate?</Text>
         </Animated.View>
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <Text variant="sectionSub">
-            swipe right if it&apos;s you, left if it&apos;s not
-          </Text>
+        <Animated.View entering={FadeInDown.delay(150).duration(600)}>
+          <Text variant="sectionSub">swipe right if yes, left if no</Text>
         </Animated.View>
       </View>
 
-      {/* Card counter */}
-      <Animated.View entering={FadeIn.delay(400).duration(500)}>
-        <View style={styles.counter}>
+      {/* Dots */}
+      <Animated.View entering={FadeIn.delay(300).duration(500)}>
+        <View style={styles.dots}>
           {painStatements.map((_, i) => (
             <View
               key={i}
@@ -169,35 +157,35 @@ export default function PainCardsScreen() {
         </View>
       </Animated.View>
 
-      {/* Cards stack */}
+      {/* Card */}
       <View style={styles.cardContainer}>
-        {currentIndex < painStatements.length ? (
+        {currentIndex < painStatements.length && (
           <SwipeCard
             key={painStatements[currentIndex].id}
             statement={painStatements[currentIndex]}
             onSwipe={handleSwipe}
           />
-        ) : null}
+        )}
       </View>
 
-      {/* Tap buttons for accessibility */}
+      {/* Tap buttons */}
       {currentIndex < painStatements.length && (
-        <Animated.View entering={FadeIn.delay(600).duration(500)}>
-          <View style={styles.tapButtons}>
+        <Animated.View entering={FadeIn.delay(500).duration(500)}>
+          <View style={styles.tapRow}>
             <Pressable
-              style={styles.tapBtnNo}
+              style={styles.tapNo}
               onPress={() => handleSwipe(painStatements[currentIndex].id, false)}
             >
               <Ionicons name="close" size={28} color={colors.alert} />
             </Pressable>
             <Text variant="caption" style={{ color: colors.textDim }}>
-              {remaining} left
+              {painStatements.length - currentIndex} left
             </Text>
             <Pressable
-              style={styles.tapBtnYes}
+              style={styles.tapYes}
               onPress={() => handleSwipe(painStatements[currentIndex].id, true)}
             >
-              <Ionicons name="checkmark" size={28} color={colors.good} />
+              <Ionicons name="heart" size={24} color={colors.good} />
             </Pressable>
           </View>
         </Animated.View>
@@ -208,18 +196,18 @@ export default function PainCardsScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: 32,
+    paddingTop: 36,
     marginBottom: 20,
   },
   title: {
     marginBottom: 8,
-    lineHeight: 40,
+    lineHeight: 48,
   },
-  counter: {
+  dots: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 8,
-    marginBottom: 24,
+    marginBottom: 28,
   },
   dot: {
     width: 8,
@@ -228,8 +216,9 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface2,
   },
   dotActive: {
-    width: 24,
+    width: 28,
     backgroundColor: colors.hotpink,
+    borderRadius: 4,
   },
   dotDone: {
     backgroundColor: colors.purple,
@@ -238,24 +227,45 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingBottom: 20,
   },
   card: {
     width: '100%',
-    borderRadius: radii.xl,
+    borderRadius: radii['2xl'],
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(168,85,247,0.12)',
   },
   cardInner: {
-    padding: 32,
+    padding: 36,
     alignItems: 'center',
-    minHeight: 280,
+    minHeight: 300,
     justifyContent: 'center',
-    gap: 20,
+    gap: 24,
+    position: 'relative',
+  },
+  swipeBadge: {
+    position: 'absolute',
+    top: 20,
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  swipeBadgeLeft: {
+    left: 20,
+    backgroundColor: 'rgba(248,113,113,0.12)',
+    borderWidth: 2,
+    borderColor: 'rgba(248,113,113,0.3)',
+  },
+  swipeBadgeRight: {
+    right: 20,
+    backgroundColor: 'rgba(74,222,128,0.12)',
+    borderWidth: 2,
+    borderColor: 'rgba(74,222,128,0.3)',
   },
   cardEmoji: {
-    fontSize: 48,
+    fontSize: 56,
   },
   cardText: {
     fontSize: 22,
@@ -263,46 +273,31 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: colors.text,
   },
-  swipeHints: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    width: '100%',
-    paddingTop: 16,
-  },
-  hintLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  hintRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  tapButtons: {
+  tapRow: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 40,
-    paddingBottom: 20,
+    gap: 44,
+    paddingBottom: 24,
+    paddingTop: 8,
   },
-  tapBtnNo: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(248,113,113,0.1)',
+  tapNo: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(248,113,113,0.06)',
     borderWidth: 2,
-    borderColor: 'rgba(248,113,113,0.3)',
+    borderColor: 'rgba(248,113,113,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },
-  tapBtnYes: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: 'rgba(74,222,128,0.1)',
+  tapYes: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(74,222,128,0.06)',
     borderWidth: 2,
-    borderColor: 'rgba(74,222,128,0.3)',
+    borderColor: 'rgba(74,222,128,0.2)',
     alignItems: 'center',
     justifyContent: 'center',
   },

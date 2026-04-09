@@ -2,23 +2,23 @@ import { useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
-import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text, Button } from '@/components/ui';
 import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
 import { useOnboarding } from '@/components/onboarding/OnboardingContext';
-import { colors, radii } from '@/constants/theme';
+import { colors, gradients, radii } from '@/constants/theme';
 
 const timesOfDay = [
-  { id: 'morning', icon: 'sunny' as const, label: 'Morning', emoji: '🌅' },
-  { id: 'evening', icon: 'moon' as const, label: 'Evening', emoji: '🌙' },
-  { id: 'both', icon: 'sync' as const, label: 'Both', emoji: '✨' },
-  { id: 'whenever', icon: 'shuffle' as const, label: 'Whenever', emoji: '🤷' },
+  { id: 'morning', emoji: '🌅', label: 'Morning' },
+  { id: 'evening', emoji: '🌙', label: 'Evening' },
+  { id: 'both', emoji: '✨', label: 'Both' },
+  { id: 'whenever', emoji: '🤷', label: 'Whenever' },
 ];
 
 const durations = [
   { id: 'under5', label: 'Under 5 min', desc: 'Quick & simple' },
-  { id: '5to10', label: '5–10 min', desc: 'Balanced routine' },
-  { id: '10to20', label: '10–20 min', desc: 'Dedicated care' },
+  { id: '5to10', label: '5\u201310 min', desc: 'Balanced routine' },
+  { id: '10to20', label: '10\u201320 min', desc: 'Dedicated care' },
   { id: '20plus', label: '20+ min', desc: 'Full ritual' },
 ];
 
@@ -29,16 +29,6 @@ export default function RoutineScreen() {
   const [duration, setDuration] = useState(data.routineDuration);
 
   const canContinue = time && duration;
-
-  const handleTimeSelect = (id: string) => {
-    setTime(id);
-    setData({ routineTime: id });
-  };
-
-  const handleDurationSelect = (id: string) => {
-    setDuration(id);
-    setData({ routineDuration: id });
-  };
 
   return (
     <OnboardingScreen
@@ -55,19 +45,19 @@ export default function RoutineScreen() {
     >
       <View style={styles.header}>
         <Animated.View entering={FadeInDown.duration(600)}>
-          <Text variant="sectionTitle" style={styles.title}>
+          <Text variant="heroTitle" style={styles.title}>
             tell us about{'\n'}your routine
           </Text>
         </Animated.View>
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+        <Animated.View entering={FadeInDown.delay(150).duration(600)}>
           <Text variant="sectionSub">
-            we&apos;ll tailor your glow tips to fit your schedule
+            we&apos;ll tailor tips to fit your schedule
           </Text>
         </Animated.View>
       </View>
 
       {/* Time of day */}
-      <Animated.View entering={FadeInDown.delay(300).duration(600)}>
+      <Animated.View entering={FadeInDown.delay(250).duration(600)}>
         <Text variant="label" style={styles.sectionLabel}>WHEN DO YOU DO SKINCARE?</Text>
         <View style={styles.timeGrid}>
           {timesOfDay.map((item) => {
@@ -76,18 +66,19 @@ export default function RoutineScreen() {
               <Pressable
                 key={item.id}
                 style={[styles.timeCard, isSelected && styles.timeCardSelected]}
-                onPress={() => handleTimeSelect(item.id)}
+                onPress={() => { setTime(item.id); setData({ routineTime: item.id }); }}
               >
-                <Text style={styles.timeEmoji}>{item.emoji}</Text>
-                <Ionicons
-                  name={item.icon}
-                  size={22}
-                  color={isSelected ? colors.hotpink : colors.textDim}
-                />
-                <Text
-                  variant="cardTitle"
-                  style={[styles.timeLabel, isSelected && { color: colors.white }]}
-                >
+                {isSelected && (
+                  <LinearGradient
+                    colors={['rgba(168,85,247,0.12)', 'rgba(236,72,153,0.08)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                    pointerEvents="none"
+                  />
+                )}
+                <Text style={{ fontSize: 28 }}>{item.emoji}</Text>
+                <Text variant="cardTitle" style={[{ fontSize: 13 }, isSelected && { color: colors.white }]}>
                   {item.label}
                 </Text>
               </Pressable>
@@ -97,32 +88,36 @@ export default function RoutineScreen() {
       </Animated.View>
 
       {/* Duration */}
-      <Animated.View entering={FadeInDown.delay(500).duration(600)}>
+      <Animated.View entering={FadeInDown.delay(400).duration(600)}>
         <Text variant="label" style={styles.sectionLabel}>HOW MUCH TIME DO YOU SPEND?</Text>
-        <View style={styles.durationList}>
+        <View style={styles.durList}>
           {durations.map((item) => {
             const isSelected = duration === item.id;
             return (
               <Pressable
                 key={item.id}
-                style={[styles.durationItem, isSelected && styles.durationItemSelected]}
-                onPress={() => handleDurationSelect(item.id)}
+                style={[styles.durItem, isSelected && styles.durItemSelected]}
+                onPress={() => { setDuration(item.id); setData({ routineDuration: item.id }); }}
               >
-                <View style={styles.durationText}>
-                  <Text
-                    variant="cardTitle"
-                    style={[{ fontSize: 14 }, isSelected && { color: colors.white }]}
-                  >
+                {isSelected && (
+                  <LinearGradient
+                    colors={[...gradients.primary.colors]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={StyleSheet.absoluteFill}
+                    pointerEvents="none"
+                  />
+                )}
+                <View style={{ flex: 1 }}>
+                  <Text variant="cardTitle" style={[{ fontSize: 14 }, isSelected && { color: colors.white }]}>
                     {item.label}
                   </Text>
-                  <Text variant="caption" style={{ color: colors.textDim, fontSize: 10 }}>
+                  <Text variant="caption" style={[{ fontSize: 10 }, isSelected ? { color: 'rgba(255,255,255,0.7)' } : { color: colors.textDim }]}>
                     {item.desc}
                   </Text>
                 </View>
                 <View style={[styles.radio, isSelected && styles.radioSelected]}>
-                  {isSelected && (
-                    <Ionicons name="checkmark" size={14} color={colors.white} />
-                  )}
+                  {isSelected && <View style={styles.radioDot} />}
                 </View>
               </Pressable>
             );
@@ -135,76 +130,69 @@ export default function RoutineScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: 32,
-    marginBottom: 24,
+    paddingTop: 36,
+    marginBottom: 28,
   },
   title: {
-    marginBottom: 8,
-    lineHeight: 40,
+    marginBottom: 10,
+    lineHeight: 48,
   },
   sectionLabel: {
-    marginBottom: 12,
-    marginTop: 8,
+    marginBottom: 14,
   },
   timeGrid: {
     flexDirection: 'row',
-    flexWrap: 'wrap',
     gap: 10,
-    marginBottom: 28,
+    marginBottom: 32,
   },
   timeCard: {
-    width: '47%',
-    flexGrow: 1,
+    flex: 1,
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    padding: 16,
+    paddingVertical: 20,
     alignItems: 'center',
-    gap: 6,
-    borderWidth: 1.5,
+    gap: 8,
+    borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
   timeCardSelected: {
-    borderColor: colors.hotpink,
-    backgroundColor: 'rgba(236,72,153,0.06)',
+    borderColor: 'rgba(168,85,247,0.3)',
   },
-  timeEmoji: {
-    fontSize: 24,
-    marginBottom: 2,
+  durList: {
+    gap: 10,
   },
-  timeLabel: {
-    fontSize: 13,
-  },
-  durationList: {
-    gap: 8,
-  },
-  durationItem: {
+  durItem: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: colors.surface,
     borderRadius: radii.md,
     padding: 16,
-    borderWidth: 1.5,
+    borderWidth: 1,
     borderColor: colors.border,
+    overflow: 'hidden',
   },
-  durationItemSelected: {
-    borderColor: colors.hotpink,
-    backgroundColor: 'rgba(236,72,153,0.06)',
-  },
-  durationText: {
-    flex: 1,
-    gap: 2,
+  durItemSelected: {
+    borderColor: 'rgba(236,72,153,0.3)',
+    backgroundColor: 'transparent',
   },
   radio: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: colors.textDim,
     alignItems: 'center',
     justifyContent: 'center',
   },
   radioSelected: {
-    borderColor: colors.hotpink,
-    backgroundColor: colors.hotpink,
+    borderColor: colors.white,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  radioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.white,
   },
 });

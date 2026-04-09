@@ -5,29 +5,32 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, Button } from '@/components/ui';
 import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
-import { colors, gradients, radii } from '@/constants/theme';
+import { colors, radii } from '@/constants/theme';
 
 const testimonials = [
   {
     name: 'Sarah M.',
     tag: 'Skincare newbie',
-    text: 'I had no idea what my skin actually needed. After my first scan, I changed my whole routine and my score went up 1.2 points in 3 weeks.',
-    score: '7.2 → 8.4',
+    text: 'After my first scan, I changed my whole routine. Score went up 1.2 in 3 weeks.',
+    score: '+1.2',
     avatar: 'S',
+    gradColors: ['#A855F7', '#EC4899'] as const,
   },
   {
     name: 'Jess K.',
     tag: 'Beauty enthusiast',
-    text: 'I was spending so much on products that didn\u2019t work for me. Glowana showed me exactly what to focus on. My friends all downloaded it after seeing my score.',
-    score: '6.8 → 8.1',
+    text: 'Glowana showed me what to actually focus on. My friends all downloaded it.',
+    score: '+1.3',
     avatar: 'J',
+    gradColors: ['#D946EF', '#EC4899'] as const,
   },
   {
     name: 'Mia L.',
     tag: 'Self-care girlie',
-    text: 'The daily streak keeps me consistent with my routine for the first time ever. Watching my glow score climb is so satisfying.',
-    score: '7.5 → 9.0',
+    text: 'The daily streak keeps me consistent for the first time ever.',
+    score: '+1.5',
     avatar: 'M',
+    gradColors: ['#EC4899', '#F472B6'] as const,
   },
 ];
 
@@ -47,70 +50,64 @@ export default function SocialProofScreen() {
     >
       <View style={styles.header}>
         <Animated.View entering={FadeInDown.duration(600)}>
-          <Text variant="sectionTitle" style={styles.title}>
+          <Text variant="heroTitle" style={styles.title}>
             join 50,000+{'\n'}women glowing up
-          </Text>
-        </Animated.View>
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <Text variant="sectionSub">
-            real stories from women who leveled up their skin
           </Text>
         </Animated.View>
       </View>
 
-      {/* Stats row */}
-      <Animated.View entering={FadeIn.delay(400).duration(700)} style={styles.statsRow}>
-        <View style={styles.stat}>
-          <Text variant="scoreLG" style={styles.statNumber}>50K+</Text>
-          <Text variant="caption">Active users</Text>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.stat}>
-          <Text variant="scoreLG" style={styles.statNumber}>4.9</Text>
-          <View style={styles.starsRow}>
-            {[1, 2, 3, 4, 5].map((i) => (
-              <Ionicons key={i} name="star" size={12} color={colors.hotpink} />
-            ))}
+      {/* Stats */}
+      <Animated.View entering={FadeIn.delay(300).duration(700)}>
+        <LinearGradient
+          colors={['rgba(168,85,247,0.06)', 'rgba(236,72,153,0.03)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.statsCard}
+        >
+          <View style={styles.stat}>
+            <Text variant="scoreLG" style={{ fontSize: 26 }}>50K+</Text>
+            <Text variant="caption" style={{ color: colors.textDim }}>Users</Text>
           </View>
-        </View>
-        <View style={styles.statDivider} />
-        <View style={styles.stat}>
-          <Text variant="scoreLG" style={styles.statNumber}>87%</Text>
-          <Text variant="caption">See results</Text>
-        </View>
+          <View style={styles.statLine} />
+          <View style={styles.stat}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Text variant="scoreLG" style={{ fontSize: 26 }}>4.9</Text>
+              <Ionicons name="star" size={16} color={colors.hotpink} />
+            </View>
+            <Text variant="caption" style={{ color: colors.textDim }}>Rating</Text>
+          </View>
+          <View style={styles.statLine} />
+          <View style={styles.stat}>
+            <Text variant="scoreLG" style={{ fontSize: 26 }}>87%</Text>
+            <Text variant="caption" style={{ color: colors.textDim }}>See results</Text>
+          </View>
+        </LinearGradient>
       </Animated.View>
 
       {/* Testimonials */}
       <View style={styles.testimonials}>
-        {testimonials.map((t, index) => (
-          <Animated.View
-            key={t.name}
-            entering={FadeInDown.delay(600 + index * 150).duration(600)}
-          >
-            <View style={styles.testimonialCard}>
-              <View style={styles.testimonialHeader}>
+        {testimonials.map((t, i) => (
+          <Animated.View key={t.name} entering={FadeInDown.delay(500 + i * 120).duration(600)}>
+            <View style={styles.tCard}>
+              <View style={styles.tHeader}>
                 <LinearGradient
-                  colors={[...gradients.primary.colors]}
-                  start={gradients.primary.start}
-                  end={gradients.primary.end}
+                  colors={[...t.gradColors]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
                   style={styles.avatar}
                 >
-                  <Text variant="buttonLabel" style={{ fontSize: 14 }}>{t.avatar}</Text>
+                  <Text variant="buttonLabel" style={{ fontSize: 13 }}>{t.avatar}</Text>
                 </LinearGradient>
-                <View style={styles.nameBlock}>
-                  <Text variant="cardTitle" style={{ fontSize: 14 }}>{t.name}</Text>
+                <View style={{ flex: 1 }}>
+                  <Text variant="cardTitle" style={{ fontSize: 13 }}>{t.name}</Text>
                   <Text variant="caption" style={{ color: colors.textDim, fontSize: 10 }}>{t.tag}</Text>
                 </View>
-                <View style={styles.scoreBadge}>
-                  <Ionicons name="trending-up" size={12} color={colors.good} />
-                  <Text variant="tagText" style={{ color: colors.good, fontSize: 10 }}>
-                    {t.score}
-                  </Text>
+                <View style={styles.scorePill}>
+                  <Ionicons name="arrow-up" size={11} color={colors.good} />
+                  <Text variant="tagText" style={{ color: colors.good, fontSize: 12 }}>{t.score}</Text>
                 </View>
               </View>
-              <Text variant="bodySmall" style={styles.testimonialText}>
-                {t.text}
-              </Text>
+              <Text variant="bodySmall" style={styles.tText}>{t.text}</Text>
             </View>
           </Animated.View>
         ))}
@@ -121,77 +118,68 @@ export default function SocialProofScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: 32,
-    marginBottom: 24,
+    paddingTop: 36,
+    marginBottom: 28,
   },
   title: {
-    marginBottom: 8,
-    lineHeight: 40,
+    marginBottom: 6,
+    lineHeight: 48,
   },
-  statsRow: {
+  statsCard: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-around',
-    backgroundColor: colors.surface,
     borderRadius: radii.xl,
-    padding: 20,
-    marginBottom: 20,
+    paddingVertical: 22,
+    paddingHorizontal: 16,
+    marginBottom: 24,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: 'rgba(168,85,247,0.08)',
   },
   stat: {
     alignItems: 'center',
     gap: 4,
   },
-  statNumber: {
-    fontSize: 24,
-    color: colors.white,
-  },
-  starsRow: {
-    flexDirection: 'row',
-    gap: 2,
-  },
-  statDivider: {
+  statLine: {
     width: 1,
-    height: 36,
-    backgroundColor: colors.border,
+    height: 32,
+    backgroundColor: 'rgba(168,85,247,0.1)',
   },
   testimonials: {
     gap: 12,
   },
-  testimonialCard: {
+  tCard: {
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    padding: 16,
+    padding: 18,
     borderWidth: 1,
     borderColor: colors.border,
   },
-  testimonialHeader: {
+  tHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
+    gap: 12,
+    marginBottom: 12,
   },
   avatar: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  nameBlock: {
-    flex: 1,
-  },
-  scoreBadge: {
+  scorePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(74,222,128,0.1)',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
+    gap: 3,
+    backgroundColor: 'rgba(74,222,128,0.08)',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
     borderRadius: 100,
+    borderWidth: 1,
+    borderColor: 'rgba(74,222,128,0.12)',
   },
-  testimonialText: {
+  tText: {
     lineHeight: 20,
     color: colors.textMuted,
     fontSize: 13,

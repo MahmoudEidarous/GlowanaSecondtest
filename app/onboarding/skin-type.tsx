@@ -2,48 +2,19 @@ import { useState } from 'react';
 import { View, StyleSheet, Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Text, Button } from '@/components/ui';
 import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
 import { useOnboarding } from '@/components/onboarding/OnboardingContext';
 import { colors, radii } from '@/constants/theme';
 
 const skinTypes = [
-  {
-    id: 'oily',
-    emoji: '💧',
-    label: 'Oily',
-    desc: 'Shiny by midday, visible pores',
-  },
-  {
-    id: 'dry',
-    emoji: '🏜️',
-    label: 'Dry',
-    desc: 'Tight, flaky, needs moisture',
-  },
-  {
-    id: 'combination',
-    emoji: '⚖️',
-    label: 'Combination',
-    desc: 'Oily T-zone, dry cheeks',
-  },
-  {
-    id: 'sensitive',
-    emoji: '🌸',
-    label: 'Sensitive',
-    desc: 'Reacts easily, redness prone',
-  },
-  {
-    id: 'normal',
-    emoji: '✅',
-    label: 'Normal',
-    desc: 'Balanced, few issues',
-  },
-  {
-    id: 'not-sure',
-    emoji: '🤷',
-    label: 'Not sure',
-    desc: 'Help me figure it out',
-  },
+  { id: 'oily', emoji: '💧', label: 'Oily', desc: 'Shiny by midday' },
+  { id: 'dry', emoji: '🏜️', label: 'Dry', desc: 'Tight & flaky' },
+  { id: 'combination', emoji: '⚖️', label: 'Combo', desc: 'Oily T-zone' },
+  { id: 'sensitive', emoji: '🌸', label: 'Sensitive', desc: 'Reacts easily' },
+  { id: 'normal', emoji: '✅', label: 'Normal', desc: 'Balanced skin' },
+  { id: 'not-sure', emoji: '🤷', label: 'Not sure', desc: 'Help me out' },
 ];
 
 export default function SkinTypeScreen() {
@@ -71,13 +42,13 @@ export default function SkinTypeScreen() {
     >
       <View style={styles.header}>
         <Animated.View entering={FadeInDown.duration(600)}>
-          <Text variant="sectionTitle" style={styles.title}>
+          <Text variant="heroTitle" style={styles.title}>
             what&apos;s your{'\n'}skin type?
           </Text>
         </Animated.View>
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
+        <Animated.View entering={FadeInDown.delay(150).duration(600)}>
           <Text variant="sectionSub">
-            this helps us personalize your glow analysis
+            helps us personalize your glow analysis
           </Text>
         </Animated.View>
       </View>
@@ -88,20 +59,26 @@ export default function SkinTypeScreen() {
           return (
             <Animated.View
               key={type.id}
-              entering={FadeInDown.delay(300 + index * 70).duration(500)}
+              entering={FadeInDown.delay(250 + index * 60).duration(500)}
               style={styles.gridItem}
             >
               <Pressable
                 onPress={() => handleSelect(type.id)}
-                style={[
-                  styles.card,
-                  isSelected && styles.cardSelected,
-                ]}
+                style={[styles.card, isSelected && styles.cardSelected]}
               >
+                {isSelected && (
+                  <LinearGradient
+                    colors={['rgba(168,85,247,0.12)', 'rgba(236,72,153,0.08)']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                    pointerEvents="none"
+                  />
+                )}
                 <Text style={styles.emoji}>{type.emoji}</Text>
                 <Text
                   variant="cardTitle"
-                  style={[styles.label, isSelected && { color: colors.white }]}
+                  style={[{ fontSize: 15 }, isSelected && { color: colors.white }]}
                 >
                   {type.label}
                 </Text>
@@ -111,6 +88,9 @@ export default function SkinTypeScreen() {
                 >
                   {type.desc}
                 </Text>
+                {isSelected && (
+                  <View style={styles.selectedDot} />
+                )}
               </Pressable>
             </Animated.View>
           );
@@ -122,49 +102,53 @@ export default function SkinTypeScreen() {
 
 const styles = StyleSheet.create({
   header: {
-    paddingTop: 32,
-    marginBottom: 28,
+    paddingTop: 36,
+    marginBottom: 32,
   },
   title: {
-    marginBottom: 8,
-    lineHeight: 40,
+    marginBottom: 10,
+    lineHeight: 48,
   },
   grid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
-    gap: 10,
+    gap: 12,
   },
   gridItem: {
-    width: '48%',
+    width: '47%',
     flexGrow: 1,
   },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: radii.lg,
-    padding: 18,
-    borderWidth: 1.5,
-    borderColor: colors.border,
+    borderRadius: radii.xl,
+    padding: 20,
     alignItems: 'center',
-    gap: 6,
-    minHeight: 120,
+    gap: 8,
+    borderWidth: 1,
+    borderColor: colors.border,
+    minHeight: 130,
     justifyContent: 'center',
+    overflow: 'hidden',
+    position: 'relative',
   },
   cardSelected: {
-    borderColor: colors.hotpink,
-    backgroundColor: 'rgba(236,72,153,0.06)',
+    borderColor: 'rgba(168,85,247,0.3)',
   },
   emoji: {
-    fontSize: 28,
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 15,
-    textAlign: 'center',
+    fontSize: 32,
   },
   desc: {
-    fontSize: 10,
+    fontSize: 11,
     textAlign: 'center',
     color: colors.textDim,
-    lineHeight: 14,
+  },
+  selectedDot: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.hotpink,
   },
 });

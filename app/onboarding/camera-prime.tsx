@@ -14,102 +14,80 @@ import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, Button } from '@/components/ui';
 import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
-import { colors, gradients, radii, shadows } from '@/constants/theme';
+import { colors, gradients, shadows } from '@/constants/theme';
 
 const benefits = [
-  {
-    icon: 'scan' as const,
-    title: 'AI skin analysis',
-    desc: 'Scans 400+ facial points to evaluate your skin',
-  },
-  {
-    icon: 'sparkles' as const,
-    title: 'Instant glow score',
-    desc: 'Get your personalized score in under 10 seconds',
-  },
-  {
-    icon: 'shield-checkmark' as const,
-    title: 'Photos stay on your device',
-    desc: 'Your selfies are never uploaded or stored on our servers',
-  },
+  { icon: 'scan' as const, title: 'AI skin analysis', desc: '400+ facial points analyzed' },
+  { icon: 'sparkles' as const, title: 'Instant glow score', desc: 'Results in under 10 seconds' },
+  { icon: 'shield-checkmark' as const, title: 'Private & secure', desc: 'Photos never leave your device' },
 ];
 
 export default function CameraPrimeScreen() {
   const router = useRouter();
   const pulseScale = useSharedValue(1);
+  const ringRotate = useSharedValue(0);
 
   useEffect(() => {
     pulseScale.value = withRepeat(
-      withSequence(
-        withTiming(1.05, { duration: 1500 }),
-        withTiming(1, { duration: 1500 })
-      ),
-      -1,
-      true
+      withSequence(withTiming(1.06, { duration: 1800 }), withTiming(1, { duration: 1800 })),
+      -1, true
     );
-  }, [pulseScale]);
+    ringRotate.value = withRepeat(
+      withTiming(360, { duration: 8000 }),
+      -1, false
+    );
+  }, [pulseScale, ringRotate]);
 
-  const pulseStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: pulseScale.value }],
-  }));
-
-  const handleEnable = () => {
-    // TODO: Request camera permission here
-    // Camera.requestCameraPermissionsAsync()
-    router.push('/onboarding/notif-prime');
-  };
+  const pulseStyle = useAnimatedStyle(() => ({ transform: [{ scale: pulseScale.value }] }));
+  const ringStyle = useAnimatedStyle(() => ({ transform: [{ rotate: `${ringRotate.value}deg` }] }));
 
   return (
     <OnboardingScreen
       step={9}
       footer={
-        <View style={styles.footerContent}>
-          <Button title="Enable Camera" size="lg" onPress={handleEnable} />
-          <Button
-            title="Not now"
-            variant="ghost"
-            size="sm"
-            onPress={() => router.push('/onboarding/notif-prime')}
-          />
+        <View style={{ gap: 10 }}>
+          <Button title="Enable Camera" size="lg" onPress={() => router.push('/onboarding/notif-prime')} />
+          <Button title="Not now" variant="ghost" size="sm" onPress={() => router.push('/onboarding/notif-prime')} />
         </View>
       }
     >
       <View style={styles.content}>
-        {/* Camera illustration */}
+        {/* Illustration */}
         <Animated.View entering={FadeIn.duration(800)}>
-          <Animated.View style={[styles.illustrationContainer, pulseStyle]}>
+          <Animated.View style={[styles.orbWrap, pulseStyle]}>
+            {/* Rotating ring */}
+            <Animated.View style={[styles.rotatingRing, ringStyle]}>
+              <View style={[styles.ringDot, { top: -4, left: '50%', marginLeft: -4 }]} />
+              <View style={[styles.ringDot, { bottom: -4, left: '50%', marginLeft: -4 }]} />
+              <View style={[styles.ringDot, { left: -4, top: '50%', marginTop: -4 }]} />
+              <View style={[styles.ringDot, { right: -4, top: '50%', marginTop: -4 }]} />
+            </Animated.View>
             <LinearGradient
               colors={[...gradients.wide.colors]}
               start={gradients.wide.start}
               end={gradients.wide.end}
-              style={[styles.illustration, shadows.glow]}
+              style={[styles.orb, shadows.glow]}
             >
-              <View style={styles.cameraRing}>
-                <Ionicons name="camera" size={44} color={colors.white} />
-              </View>
+              <Ionicons name="camera" size={48} color={colors.white} />
             </LinearGradient>
           </Animated.View>
         </Animated.View>
 
-        {/* Text */}
         <Animated.View entering={FadeInDown.delay(300).duration(600)}>
-          <Text variant="sectionTitle" style={styles.title}>
+          <Text variant="heroTitle" style={styles.title}>
             see your skin{'\n'}like never before
           </Text>
         </Animated.View>
-        <Animated.View entering={FadeInDown.delay(500).duration(600)}>
-          <Text variant="sectionSub" style={styles.subtitle}>
-            our AI needs your camera to analyze your skin and generate your personalized glow score
+        <Animated.View entering={FadeInDown.delay(450).duration(600)}>
+          <Text variant="sectionSub" style={styles.sub}>
+            our AI needs your camera to analyze your skin and create your glow score
           </Text>
         </Animated.View>
 
         {/* Benefits */}
         <View style={styles.benefits}>
-          {benefits.map((benefit, index) => (
-            <Animated.View
-              key={benefit.icon}
-              entering={FadeInDown.delay(700 + index * 100).duration(500)}
-            >
+          {benefits.map((b, i) => (
+            <Animated.View key={b.icon} entering={FadeInDown.delay(600 + i * 100).duration(500)}>
               <View style={styles.benefitRow}>
                 <LinearGradient
                   colors={[...gradients.primary.colors]}
@@ -117,15 +95,11 @@ export default function CameraPrimeScreen() {
                   end={gradients.primary.end}
                   style={styles.benefitIcon}
                 >
-                  <Ionicons name={benefit.icon} size={18} color={colors.white} />
+                  <Ionicons name={b.icon} size={18} color={colors.white} />
                 </LinearGradient>
-                <View style={styles.benefitText}>
-                  <Text variant="cardTitle" style={{ fontSize: 14 }}>
-                    {benefit.title}
-                  </Text>
-                  <Text variant="caption" style={{ color: colors.textDim, fontSize: 11 }}>
-                    {benefit.desc}
-                  </Text>
+                <View style={{ flex: 1 }}>
+                  <Text variant="cardTitle" style={{ fontSize: 14 }}>{b.title}</Text>
+                  <Text variant="caption" style={{ color: colors.textDim, fontSize: 11 }}>{b.desc}</Text>
                 </View>
               </View>
             </Animated.View>
@@ -142,38 +116,48 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  illustrationContainer: {
-    marginBottom: 32,
+  orbWrap: {
+    marginBottom: 36,
+    position: 'relative',
   },
-  illustration: {
-    width: 130,
-    height: 130,
-    borderRadius: 40,
-    alignItems: 'center',
-    justifyContent: 'center',
+  rotatingRing: {
+    position: 'absolute',
+    top: -12,
+    left: -12,
+    right: -12,
+    bottom: -12,
+    borderRadius: 999,
+    borderWidth: 1,
+    borderColor: 'rgba(168,85,247,0.15)',
+    borderStyle: 'dashed',
   },
-  cameraRing: {
-    width: 80,
-    height: 80,
-    borderRadius: 40,
-    borderWidth: 3,
-    borderColor: 'rgba(255,255,255,0.3)',
+  ringDot: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.hotpink,
+  },
+  orb: {
+    width: 120,
+    height: 120,
+    borderRadius: 36,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
     textAlign: 'center',
     marginBottom: 12,
-    lineHeight: 40,
+    lineHeight: 48,
   },
-  subtitle: {
+  sub: {
     textAlign: 'center',
     maxWidth: 300,
-    marginBottom: 32,
+    marginBottom: 36,
     lineHeight: 22,
   },
   benefits: {
-    gap: 14,
+    gap: 16,
     width: '100%',
   },
   benefitRow: {
@@ -182,17 +166,10 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   benefitIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 42,
+    height: 42,
+    borderRadius: 13,
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  benefitText: {
-    flex: 1,
-    gap: 2,
-  },
-  footerContent: {
-    gap: 8,
   },
 });

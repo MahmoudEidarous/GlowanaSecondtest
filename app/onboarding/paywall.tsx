@@ -1,13 +1,13 @@
 import { useState } from 'react';
-import { View, StyleSheet, Pressable } from 'react-native';
+import { View, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, Button } from '@/components/ui';
-import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
-import { colors, gradients, radii, shadows } from '@/constants/theme';
+import { colors, gradients, radii } from '@/constants/theme';
 
 const ONBOARDING_COMPLETE_KEY = 'glowana_onboarding_complete';
 
@@ -24,6 +24,7 @@ type Plan = 'weekly' | 'annual';
 
 export default function PaywallScreen() {
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const [selectedPlan, setSelectedPlan] = useState<Plan>('annual');
 
   const completeOnboarding = async () => {
@@ -31,215 +32,222 @@ export default function PaywallScreen() {
     router.replace('/(tabs)');
   };
 
-  const handleSubscribe = () => {
-    // TODO: Integrate RevenueCat / subscription logic
-    completeOnboarding();
-  };
-
   return (
-    <OnboardingScreen step={12} showProgress={false}>
-      <View style={styles.content}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
+      <ScrollView
+        contentContainerStyle={styles.scroll}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Header */}
-        <Animated.View entering={FadeIn.duration(600)} style={styles.headerRow}>
+        <Animated.View entering={FadeIn.duration(400)} style={styles.topBar}>
           <LinearGradient
             colors={[...gradients.primary.colors]}
             start={gradients.primary.start}
             end={gradients.primary.end}
             style={styles.logoMini}
           >
-            <Text variant="buttonLabel" style={{ fontSize: 18 }}>G</Text>
+            <Text variant="buttonLabel" style={{ fontSize: 16 }}>G</Text>
           </LinearGradient>
-          <Pressable
-            style={styles.closeBtn}
-            onPress={completeOnboarding}
-          >
-            <Ionicons name="close" size={22} color={colors.textDim} />
+          <Pressable style={styles.closeBtn} onPress={completeOnboarding}>
+            <Ionicons name="close" size={20} color={colors.textDim} />
           </Pressable>
         </Animated.View>
 
         {/* Title */}
-        <Animated.View entering={FadeInDown.delay(200).duration(600)}>
-          <Text variant="sectionTitle" style={styles.title}>
+        <Animated.View entering={FadeInDown.delay(100).duration(600)}>
+          <Text variant="heroTitle" style={styles.title}>
             unlock your{'\n'}full glow-up
           </Text>
-          <Text variant="sectionSub" style={styles.subtitle}>
-            your personalized glow profile is ready — start your free trial to unlock everything
+          <Text variant="sectionSub" style={styles.sub}>
+            your glow profile is ready — start your free trial to see everything
           </Text>
         </Animated.View>
 
         {/* Features */}
-        <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.featuresList}>
-          {features.map((feature) => (
-            <View key={feature.text} style={styles.featureRow}>
-              <LinearGradient
-                colors={[...gradients.primary.colors]}
-                start={gradients.primary.start}
-                end={gradients.primary.end}
-                style={styles.featureCheck}
-              >
-                <Ionicons name={feature.icon} size={14} color={colors.white} />
-              </LinearGradient>
-              <Text variant="bodySmall" style={{ color: colors.text, fontSize: 13, flex: 1 }}>
-                {feature.text}
-              </Text>
-            </View>
-          ))}
+        <Animated.View entering={FadeInDown.delay(250).duration(600)}>
+          <View style={styles.features}>
+            {features.map((f) => (
+              <View key={f.text} style={styles.featureRow}>
+                <LinearGradient
+                  colors={[...gradients.primary.colors]}
+                  start={gradients.primary.start}
+                  end={gradients.primary.end}
+                  style={styles.featureIcon}
+                >
+                  <Ionicons name={f.icon} size={13} color={colors.white} />
+                </LinearGradient>
+                <Text variant="bodySmall" style={{ color: colors.text, fontSize: 13, flex: 1 }}>
+                  {f.text}
+                </Text>
+              </View>
+            ))}
+          </View>
         </Animated.View>
 
-        {/* Plan selector */}
-        <Animated.View entering={FadeInDown.delay(600).duration(600)} style={styles.plans}>
-          {/* Annual plan */}
+        {/* Plans */}
+        <Animated.View entering={FadeInDown.delay(400).duration(600)} style={styles.plans}>
+          {/* Annual */}
           <Pressable
-            style={[styles.planCard, selectedPlan === 'annual' && styles.planCardSelected]}
+            style={[styles.planCard, selectedPlan === 'annual' && styles.planSelected]}
             onPress={() => setSelectedPlan('annual')}
           >
             {selectedPlan === 'annual' && (
               <LinearGradient
-                colors={[...gradients.button.colors]}
-                start={gradients.button.start}
-                end={gradients.button.end}
-                style={styles.bestValueBadge}
-              >
-                <Text variant="tagText" style={{ fontSize: 9 }}>BEST VALUE</Text>
-              </LinearGradient>
+                colors={[...gradients.primary.colors]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              />
             )}
-            <View style={styles.planHeader}>
-              <View style={[styles.planRadio, selectedPlan === 'annual' && styles.planRadioSelected]}>
-                {selectedPlan === 'annual' && (
-                  <Ionicons name="checkmark" size={14} color={colors.white} />
-                )}
+            {selectedPlan === 'annual' && (
+              <View style={styles.bestBadge}>
+                <Text variant="tagText" style={{ fontSize: 9 }}>BEST VALUE</Text>
               </View>
-              <View style={styles.planInfo}>
-                <Text variant="cardTitle">Annual</Text>
-                <Text variant="caption" style={{ color: colors.textDim }}>
-                  3-day free trial, then
+            )}
+            <View style={styles.planRow}>
+              <View style={[styles.planRadio, selectedPlan === 'annual' && styles.planRadioOn]}>
+                {selectedPlan === 'annual' && <View style={styles.planRadioDot} />}
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text variant="cardTitle" style={selectedPlan === 'annual' ? { color: colors.white } : {}}>
+                  Annual
+                </Text>
+                <Text variant="caption" style={{ color: selectedPlan === 'annual' ? 'rgba(255,255,255,0.6)' : colors.textDim, fontSize: 10 }}>
+                  3-day free trial
                 </Text>
               </View>
-              <View style={styles.planPrice}>
-                <Text variant="cardTitle" style={{ color: colors.hotpink, fontSize: 20 }}>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text variant="cardTitle" style={[{ fontSize: 22 }, selectedPlan === 'annual' ? { color: colors.white } : { color: colors.hotpink }]}>
                   $29.99
                 </Text>
-                <Text variant="caption" style={{ color: colors.textDim }}>/year</Text>
+                <Text variant="caption" style={{ color: selectedPlan === 'annual' ? 'rgba(255,255,255,0.6)' : colors.textDim, fontSize: 10 }}>
+                  /year — just $2.50/mo
+                </Text>
               </View>
-            </View>
-            <View style={styles.planSaving}>
-              <Ionicons name="pricetag" size={12} color={colors.good} />
-              <Text variant="caption" style={{ color: colors.good, fontSize: 10 }}>
-                Save 88% vs weekly — just $2.50/month
-              </Text>
             </View>
           </Pressable>
 
-          {/* Weekly plan */}
+          {/* Weekly */}
           <Pressable
-            style={[styles.planCard, selectedPlan === 'weekly' && styles.planCardSelected]}
+            style={[styles.planCard, selectedPlan === 'weekly' && styles.planSelected]}
             onPress={() => setSelectedPlan('weekly')}
           >
-            <View style={styles.planHeader}>
-              <View style={[styles.planRadio, selectedPlan === 'weekly' && styles.planRadioSelected]}>
-                {selectedPlan === 'weekly' && (
-                  <Ionicons name="checkmark" size={14} color={colors.white} />
-                )}
+            {selectedPlan === 'weekly' && (
+              <LinearGradient
+                colors={[...gradients.primary.colors]}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={StyleSheet.absoluteFill}
+                pointerEvents="none"
+              />
+            )}
+            <View style={styles.planRow}>
+              <View style={[styles.planRadio, selectedPlan === 'weekly' && styles.planRadioOn]}>
+                {selectedPlan === 'weekly' && <View style={styles.planRadioDot} />}
               </View>
-              <View style={styles.planInfo}>
-                <Text variant="cardTitle">Weekly</Text>
-                <Text variant="caption" style={{ color: colors.textDim }}>
-                  3-day free trial, then
+              <View style={{ flex: 1 }}>
+                <Text variant="cardTitle" style={selectedPlan === 'weekly' ? { color: colors.white } : {}}>
+                  Weekly
+                </Text>
+                <Text variant="caption" style={{ color: selectedPlan === 'weekly' ? 'rgba(255,255,255,0.6)' : colors.textDim, fontSize: 10 }}>
+                  3-day free trial
                 </Text>
               </View>
-              <View style={styles.planPrice}>
-                <Text variant="cardTitle" style={{ fontSize: 20 }}>$4.99</Text>
-                <Text variant="caption" style={{ color: colors.textDim }}>/week</Text>
+              <View style={{ alignItems: 'flex-end' }}>
+                <Text variant="cardTitle" style={[{ fontSize: 22 }, selectedPlan === 'weekly' ? { color: colors.white } : {}]}>
+                  $4.99
+                </Text>
+                <Text variant="caption" style={{ color: selectedPlan === 'weekly' ? 'rgba(255,255,255,0.6)' : colors.textDim, fontSize: 10 }}>
+                  /week
+                </Text>
               </View>
             </View>
           </Pressable>
         </Animated.View>
 
         {/* Testimonial */}
-        <Animated.View entering={FadeInDown.delay(800).duration(600)}>
+        <Animated.View entering={FadeInDown.delay(550).duration(600)}>
           <View style={styles.testimonial}>
-            <View style={styles.starsRow}>
+            <View style={styles.stars}>
               {[1, 2, 3, 4, 5].map((i) => (
                 <Ionicons key={i} name="star" size={14} color={colors.hotpink} />
               ))}
             </View>
-            <Text variant="bodySmall" style={styles.testimonialText}>
-              &ldquo;Best skincare investment I&apos;ve ever made. My skin has never been better and I actually know why.&rdquo;
+            <Text variant="bodySmall" style={styles.tText}>
+              &ldquo;Best skincare investment I&apos;ve made. My skin has never been better.&rdquo;
             </Text>
-            <Text variant="caption" style={{ color: colors.textDim }}>
-              — Emma R., using Glowana for 3 months
+            <Text variant="caption" style={{ color: colors.textDim, fontSize: 11 }}>
+              — Emma R.
             </Text>
           </View>
         </Animated.View>
-      </View>
+      </ScrollView>
 
-      {/* CTA */}
-      <View style={styles.footer}>
-        <Button
-          title={`Start Free Trial`}
-          size="lg"
-          onPress={handleSubscribe}
-        />
-        <View style={styles.footerLinks}>
-          <Pressable onPress={completeOnboarding}>
-            <Text variant="caption" style={{ color: colors.textDim }}>
-              Continue with limited access
-            </Text>
-          </Pressable>
-        </View>
-        <Text variant="caption" style={styles.legalText}>
-          Cancel anytime. No charge during trial period.
+      {/* Sticky footer */}
+      <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom + 8, 24) }]}>
+        <Button title="Start Free Trial" size="lg" onPress={completeOnboarding} />
+        <Pressable style={styles.skipLink} onPress={completeOnboarding}>
+          <Text variant="caption" style={{ color: colors.textDim }}>Continue with limited access</Text>
+        </Pressable>
+        <Text variant="caption" style={styles.legal}>
+          Cancel anytime. No charge during trial.
         </Text>
       </View>
-    </OnboardingScreen>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  content: {
+  container: {
     flex: 1,
-    paddingTop: 8,
+    backgroundColor: colors.bg,
   },
-  headerRow: {
+  scroll: {
+    paddingHorizontal: 28,
+    paddingBottom: 12,
+  },
+  topBar: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    paddingTop: 8,
+    marginBottom: 24,
   },
   logoMini: {
-    width: 40,
-    height: 40,
-    borderRadius: 12,
+    width: 38,
+    height: 38,
+    borderRadius: 11,
     alignItems: 'center',
     justifyContent: 'center',
   },
   closeBtn: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: 34,
+    height: 34,
+    borderRadius: 17,
     backgroundColor: colors.surface,
     alignItems: 'center',
     justifyContent: 'center',
   },
   title: {
-    marginBottom: 8,
-    lineHeight: 40,
+    marginBottom: 10,
+    lineHeight: 48,
   },
-  subtitle: {
-    marginBottom: 20,
+  sub: {
+    marginBottom: 24,
     lineHeight: 22,
     maxWidth: 320,
   },
-  featuresList: {
-    marginBottom: 20,
-    gap: 10,
+  features: {
+    gap: 12,
+    marginBottom: 28,
   },
   featureRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  featureCheck: {
+  featureIcon: {
     width: 28,
     height: 28,
     borderRadius: 8,
@@ -248,33 +256,34 @@ const styles = StyleSheet.create({
   },
   plans: {
     gap: 10,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   planCard: {
-    backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    padding: 16,
-    borderWidth: 1.5,
+    padding: 18,
+    borderWidth: 1,
     borderColor: colors.border,
-    position: 'relative',
+    backgroundColor: colors.surface,
     overflow: 'hidden',
+    position: 'relative',
   },
-  planCardSelected: {
-    borderColor: colors.hotpink,
-    backgroundColor: 'rgba(236,72,153,0.04)',
+  planSelected: {
+    borderColor: 'rgba(168,85,247,0.3)',
+    backgroundColor: 'transparent',
   },
-  bestValueBadge: {
+  bestBadge: {
     position: 'absolute',
     top: 0,
     right: 0,
+    backgroundColor: 'rgba(255,255,255,0.15)',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderBottomLeftRadius: 10,
   },
-  planHeader: {
+  planRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    gap: 14,
   },
   planRadio: {
     width: 22,
@@ -285,36 +294,26 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  planRadioSelected: {
-    borderColor: colors.hotpink,
-    backgroundColor: colors.hotpink,
+  planRadioOn: {
+    borderColor: colors.white,
+    backgroundColor: 'rgba(255,255,255,0.2)',
   },
-  planInfo: {
-    flex: 1,
-    gap: 1,
-  },
-  planPrice: {
-    alignItems: 'flex-end',
-  },
-  planSaving: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(74,222,128,0.1)',
+  planRadioDot: {
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: colors.white,
   },
   testimonial: {
     alignItems: 'center',
     gap: 6,
-    paddingVertical: 12,
+    paddingVertical: 8,
   },
-  starsRow: {
+  stars: {
     flexDirection: 'row',
     gap: 2,
   },
-  testimonialText: {
+  tText: {
     textAlign: 'center',
     color: colors.textMuted,
     fontStyle: 'italic',
@@ -322,16 +321,20 @@ const styles = StyleSheet.create({
     maxWidth: 280,
   },
   footer: {
-    paddingHorizontal: 0,
-    paddingBottom: 8,
-    gap: 10,
+    paddingHorizontal: 28,
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+    backgroundColor: colors.bg,
   },
-  footerLinks: {
+  skipLink: {
     alignItems: 'center',
+    paddingTop: 12,
   },
-  legalText: {
+  legal: {
     textAlign: 'center',
     color: colors.textDim,
     fontSize: 10,
+    paddingTop: 8,
   },
 });
