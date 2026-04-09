@@ -1,6 +1,6 @@
 import { View, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
-import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
+import Animated, { FadeInDown } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Text, Button } from '@/components/ui';
