@@ -40,7 +40,7 @@ const GlowanaTheme = {
 };
 
 export const unstable_settings = {
-  anchor: '(tabs)',
+  anchor: 'index',
 };
 
 export default function RootLayout() {
@@ -75,6 +75,7 @@ export default function RootLayout() {
           contentStyle: { backgroundColor: colors.bg },
         }}
       >
+        <Stack.Screen name="index" />
         <Stack.Screen name="onboarding" />
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />

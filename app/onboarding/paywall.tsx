@@ -4,9 +4,12 @@ import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Text, Button } from '@/components/ui';
 import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
 import { colors, gradients, radii, shadows } from '@/constants/theme';
+
+const ONBOARDING_COMPLETE_KEY = 'glowana_onboarding_complete';
 
 const features = [
   { icon: 'scan' as const, text: 'Unlimited AI skin scans' },
@@ -23,9 +26,14 @@ export default function PaywallScreen() {
   const router = useRouter();
   const [selectedPlan, setSelectedPlan] = useState<Plan>('annual');
 
+  const completeOnboarding = async () => {
+    await AsyncStorage.setItem(ONBOARDING_COMPLETE_KEY, 'true');
+    router.replace('/(tabs)');
+  };
+
   const handleSubscribe = () => {
     // TODO: Integrate RevenueCat / subscription logic
-    router.replace('/(tabs)');
+    completeOnboarding();
   };
 
   return (
@@ -43,7 +51,7 @@ export default function PaywallScreen() {
           </LinearGradient>
           <Pressable
             style={styles.closeBtn}
-            onPress={() => router.replace('/(tabs)')}
+            onPress={completeOnboarding}
           >
             <Ionicons name="close" size={22} color={colors.textDim} />
           </Pressable>
@@ -173,7 +181,7 @@ export default function PaywallScreen() {
           onPress={handleSubscribe}
         />
         <View style={styles.footerLinks}>
-          <Pressable onPress={() => router.replace('/(tabs)')}>
+          <Pressable onPress={completeOnboarding}>
             <Text variant="caption" style={{ color: colors.textDim }}>
               Continue with limited access
             </Text>
