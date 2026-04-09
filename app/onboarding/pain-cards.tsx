@@ -13,10 +13,10 @@ import Animated, {
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Text, Button } from '@/components/ui';
+import { Text } from '@/components/ui';
 import { OnboardingScreen } from '@/components/onboarding/OnboardingScreen';
 import { useOnboarding } from '@/components/onboarding/OnboardingContext';
-import { colors, gradients, radii } from '@/constants/theme';
+import { colors, radii } from '@/constants/theme';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const SWIPE_THRESHOLD = SCREEN_WIDTH * 0.3;
